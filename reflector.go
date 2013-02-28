@@ -8,12 +8,12 @@ import (
 func MapToStruct(m map[string]interface{}, structPointer interface{}, tag string) {
 	structPointerType := reflect.TypeOf(structPointer)
 	if structPointerType.Kind() != reflect.Ptr {
-		panic(fmt.Errorf("Expected struct pointer as second argument, got %s", structPointerType.Kind()))
+		panic(fmt.Errorf("Expected pointer to struct as second argument, got %s", structPointerType.Kind()))
 	}
 
 	structType := structPointerType.Elem()
 	if structType.Kind() != reflect.Struct {
-		panic(fmt.Errorf("Expected struct pointer as second argument, got pointer to %s", structType.Kind()))
+		panic(fmt.Errorf("Expected pointer to struct as second argument, got pointer to %s", structType.Kind()))
 	}
 	s := reflect.ValueOf(structPointer).Elem()
 
@@ -79,14 +79,35 @@ func MapToStruct(m map[string]interface{}, structPointer interface{}, tag string
 	return
 }
 
-func MapsToStructs(s []interface{}, slicePointer interface{}, tag string) {
-	sliceType := reflect.TypeOf(slicePointer).Elem()
+func MapsToStructs(s []map[string]interface{}, slicePointer interface{}, tag string) {
+	slicePointerType := reflect.TypeOf(slicePointer)
+	if slicePointerType.Kind() != reflect.Ptr {
+		panic(fmt.Errorf("Expected pointer to slice of structs as second argument, got %s", slicePointerType.Kind()))
+	}
+
+	sliceType := slicePointerType.Elem()
+	if sliceType.Kind() != reflect.Slice {
+		panic(fmt.Errorf("Expected pointer to slice of structs as second argument, got pointer to %s", sliceType.Kind()))
+	}
+
+	structType := sliceType.Elem()
+	if structType.Kind() != reflect.Struct {
+		panic(fmt.Errorf("Expected pointer to slice of structs as second argument, got pointer to slice of %s", structType.Kind()))
+	}
+
 	slice := reflect.MakeSlice(sliceType, 0, len(s))
-	for _, i := range s {
-		m := i.(map[string]interface{})
-		struc := reflect.New(sliceType.Elem())
-		MapToStruct(m, struc.Interface(), tag)
-		slice = reflect.Append(slice, struc.Elem())
+	for _, m := range s {
+		str := reflect.New(structType)
+		MapToStruct(m, str.Interface(), tag)
+		slice = reflect.Append(slice, str.Elem())
 	}
 	reflect.ValueOf(slicePointer).Elem().Set(slice)
+}
+
+func MapsToStructs2(s []interface{}, slicePointer interface{}, tag string) {
+	m := make([]map[string]interface{}, 0, len(s))
+	for _, i := range s {
+		m = append(m, i.(map[string]interface{}))
+	}
+	MapsToStructs(m, slicePointer, tag)
 }

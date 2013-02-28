@@ -19,7 +19,7 @@ func TestMapToStructBad1(t *testing.T) {
 	defer func() {
 		r := recover()
 		e, ok := r.(error)
-		if !ok || e.Error() != "Expected struct pointer as second argument, got struct" {
+		if !ok || e.Error() != "Expected pointer to struct as second argument, got struct" {
 			t.Error(r)
 		}
 	}()
@@ -31,7 +31,7 @@ func TestMapToStructBad2(t *testing.T) {
 	defer func() {
 		r := recover()
 		e, ok := r.(error)
-		if !ok || e.Error() != "Expected struct pointer as second argument, got pointer to int" {
+		if !ok || e.Error() != "Expected pointer to struct as second argument, got pointer to int" {
 			t.Error(r)
 		}
 	}()
@@ -52,13 +52,64 @@ func ExampleMapToStruct() {
 	// {Int:42 Uint8:8 Uintptr:195939070 Float32:3.14 String:str foo:0}
 }
 
+func TestMapsToStructsBad1(t *testing.T) {
+	defer func() {
+		r := recover()
+		e, ok := r.(error)
+		if !ok || e.Error() != "Expected pointer to slice of structs as second argument, got slice" {
+			t.Error(r)
+		}
+	}()
+	var s []S
+	m := map[string]interface{}{
+		"Int": 42, "Uint8": uint8(8), "Uintptr": uintptr(0xbadcafe),
+		"f32": float32(3.14), "String": "str", "foo": 13,
+	}
+	MapsToStructs([]map[string]interface{}{m}, s, "json")
+	t.Fatal("should panic")
+}
+
+func TestMapsToStructsBad2(t *testing.T) {
+	defer func() {
+		r := recover()
+		e, ok := r.(error)
+		if !ok || e.Error() != "Expected pointer to slice of structs as second argument, got pointer to int" {
+			t.Error(r)
+		}
+	}()
+	var s *int
+	m := map[string]interface{}{
+		"Int": 42, "Uint8": uint8(8), "Uintptr": uintptr(0xbadcafe),
+		"f32": float32(3.14), "String": "str", "foo": 13,
+	}
+	MapsToStructs([]map[string]interface{}{m}, s, "json")
+	t.Fatal("should panic")
+}
+
+func TestMapsToStructsBad3(t *testing.T) {
+	defer func() {
+		r := recover()
+		e, ok := r.(error)
+		if !ok || e.Error() != "Expected pointer to slice of structs as second argument, got pointer to slice of int" {
+			t.Error(r)
+		}
+	}()
+	var s *[]int
+	m := map[string]interface{}{
+		"Int": 42, "Uint8": uint8(8), "Uintptr": uintptr(0xbadcafe),
+		"f32": float32(3.14), "String": "str", "foo": 13,
+	}
+	MapsToStructs([]map[string]interface{}{m}, s, "json")
+	t.Fatal("should panic")
+}
+
 func ExampleMapsToStructs() {
 	var s []S
 	m := map[string]interface{}{
 		"Int": 42, "Uint8": uint8(8), "Uintptr": uintptr(0xbadcafe),
 		"f32": float32(3.14), "String": "str", "foo": 13,
 	}
-	MapsToStructs([]interface{}{m}, &s, "json")
+	MapsToStructs([]map[string]interface{}{m}, &s, "json")
 	fmt.Printf("%+v", s)
 	// Output:
 	// [{Int:42 Uint8:8 Uintptr:195939070 Float32:3.14 String:str foo:0}]
