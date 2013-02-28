@@ -1,4 +1,4 @@
-reflector [![Build Status](https://secure.travis-ci.org/AlekSi/reflector)](https://travis-ci.org/AlekSi/reflector) [![Is maintained?](http://stillmaintained.com/AlekSi/reflector.png)](http://stillmaintained.com/AlekSi/reflector)
+reflector [![Build Status](https://secure.travis-ci.org/AlekSi/reflector.png)](https://travis-ci.org/AlekSi/reflector) [![Is maintained?](http://stillmaintained.com/AlekSi/reflector.png)](http://stillmaintained.com/AlekSi/reflector)
 =========
 
 Install it: `go get github.com/AlekSi/reflector`
