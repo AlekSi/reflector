@@ -105,9 +105,9 @@ func MapsToStructs(s []map[string]interface{}, slicePointer interface{}, tag str
 }
 
 func MapsToStructs2(s []interface{}, slicePointer interface{}, tag string) {
-	m := make([]map[string]interface{}, 0, len(s))
-	for _, i := range s {
-		m = append(m, i.(map[string]interface{}))
+	m := make([]map[string]interface{}, len(s))
+	for index, i := range s {
+		m[index] = i.(map[string]interface{})
 	}
 	MapsToStructs(m, slicePointer, tag)
 }
