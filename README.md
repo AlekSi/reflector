@@ -1,7 +1,10 @@
 reflector [![Build Status](https://secure.travis-ci.org/AlekSi/reflector.png)](https://travis-ci.org/AlekSi/reflector) [![Is maintained?](http://stillmaintained.com/AlekSi/reflector.png)](http://stillmaintained.com/AlekSi/reflector)
 =========
 
-This Go package extends standard package reflect with useful utilities.
+This Go package extends standard package reflect with useful utilities:
+
+- convert map to struct
+- convert slice of maps to slice of structs
 
 Install it: `go get github.com/AlekSi/reflector`
 
