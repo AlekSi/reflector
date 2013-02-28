@@ -1,3 +1,4 @@
+// Package reflector extends standard package reflect with useful utilities.
 package reflector
 
 import (
@@ -5,6 +6,11 @@ import (
 	"reflect"
 )
 
+// Converts a map to struct. Only exported struct fields are set.
+// Omitted or extra values in map are ignored.
+// Tag may be used to change mapping between struct field and map key.
+// Currently supports bool, ints, uints, floats, strings.
+// Panics in case of error.
 func MapToStruct(m map[string]interface{}, structPointer interface{}, tag string) {
 	structPointerType := reflect.TypeOf(structPointer)
 	if structPointerType.Kind() != reflect.Ptr {
@@ -79,6 +85,7 @@ func MapToStruct(m map[string]interface{}, structPointer interface{}, tag string
 	return
 }
 
+// Converts a slice of maps to a slice of structs. Uses MapToStruct().
 func MapsToStructs(s []map[string]interface{}, slicePointer interface{}, tag string) {
 	slicePointerType := reflect.TypeOf(slicePointer)
 	if slicePointerType.Kind() != reflect.Ptr {
@@ -104,6 +111,7 @@ func MapsToStructs(s []map[string]interface{}, slicePointer interface{}, tag str
 	reflect.ValueOf(slicePointer).Elem().Set(slice)
 }
 
+// Variant of MapsToStructs() with relaxed signature.
 func MapsToStructs2(s []interface{}, slicePointer interface{}, tag string) {
 	m := make([]map[string]interface{}, len(s))
 	for index, i := range s {
