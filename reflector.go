@@ -78,3 +78,15 @@ func MapToStruct(m map[string]interface{}, structPointer interface{}, tag string
 	}
 	return
 }
+
+func MapsToStructs(s []interface{}, slicePointer interface{}, tag string) {
+	sliceType := reflect.TypeOf(slicePointer).Elem()
+	slice := reflect.MakeSlice(sliceType, 0, len(s))
+	for _, i := range s {
+		m := i.(map[string]interface{})
+		struc := reflect.New(sliceType.Elem())
+		MapToStruct(m, struc.Interface(), tag)
+		slice = reflect.Append(slice, struc.Elem())
+	}
+	reflect.ValueOf(slicePointer).Elem().Set(slice)
+}

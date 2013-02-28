@@ -52,6 +52,18 @@ func ExampleMapToStruct() {
 	// {Int:42 Uint8:8 Uintptr:195939070 Float32:3.14 String:str foo:0}
 }
 
+func ExampleMapsToStructs() {
+	var s []S
+	m := map[string]interface{}{
+		"Int": 42, "Uint8": uint8(8), "Uintptr": uintptr(0xbadcafe),
+		"f32": float32(3.14), "String": "str", "foo": 13,
+	}
+	MapsToStructs([]interface{}{m}, &s, "json")
+	fmt.Printf("%+v", s)
+	// Output:
+	// [{Int:42 Uint8:8 Uintptr:195939070 Float32:3.14 String:str foo:0}]
+}
+
 func BenchmarkMapToStruct(b *testing.B) {
 	var s S
 	m := map[string]interface{}{"Int": 42, "Uint8": uint8(8), "Uintptr": uintptr(0xbadcafe),
