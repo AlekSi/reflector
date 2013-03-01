@@ -129,7 +129,7 @@ func StructToMap(structPointer interface{}, mapPointer *map[string]interface{}, 
 
 		m[name] = f.Interface()
 	}
-	reflect.ValueOf(mapPointer).Elem().Set(reflect.ValueOf(m))
+	*mapPointer = m
 }
 
 // Converts a map to struct using converter function.
