@@ -98,7 +98,7 @@ func Strconv(value interface{}, kind reflect.Kind) (res interface{}) {
 // Tag may be used to change mapping between struct field and map key.
 // Currently supports bool, ints, uints, floats, strings.
 // Panics in case of error.
-func StructToMap(structPointer interface{}, m map[string]interface{}, tag string) {
+func StructToMap(structPointer interface{}, mapPointer *map[string]interface{}, tag string) {
 	structPointerType := reflect.TypeOf(structPointer)
 	if structPointerType.Kind() != reflect.Ptr {
 		panic(fmt.Errorf("Expected pointer to struct as first argument, got %s", structPointerType.Kind()))
@@ -110,6 +110,7 @@ func StructToMap(structPointer interface{}, m map[string]interface{}, tag string
 	}
 
 	s := reflect.ValueOf(structPointer).Elem()
+	m := make(map[string]interface{}, structType.NumField())
 
 	var name string
 	for i := 0; i < structType.NumField(); i++ {
@@ -128,6 +129,7 @@ func StructToMap(structPointer interface{}, m map[string]interface{}, tag string
 
 		m[name] = f.Interface()
 	}
+	reflect.ValueOf(mapPointer).Elem().Set(reflect.ValueOf(m))
 }
 
 // Converts a map to struct using converter function.
