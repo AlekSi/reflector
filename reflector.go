@@ -4,6 +4,7 @@ package reflector
 import (
 	"fmt"
 	"reflect"
+	"runtime"
 )
 
 // Converts a map to struct. Only exported struct fields are set.
@@ -23,13 +24,26 @@ func MapToStruct(m map[string]interface{}, structPointer interface{}, tag string
 	}
 	s := reflect.ValueOf(structPointer).Elem()
 
+	var name string
+	defer func() {
+		e := recover()
+		if e == nil {
+			return
+		}
+
+		te, ok := e.(*runtime.TypeAssertionError)
+		if ok {
+			panic(fmt.Errorf("Field %s: %s", name, te))
+		}
+		panic(e)
+	}()
+
 	for i := 0; i < structType.NumField(); i++ {
 		f := s.Field(i)
 		if !f.CanSet() {
 			continue
 		}
 
-		var name string
 		stf := structType.Field(i)
 		if tag != "" {
 			name = stf.Tag.Get(tag)
