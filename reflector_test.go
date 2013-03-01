@@ -7,13 +7,72 @@ import (
 	"testing"
 )
 
-type S struct {
+type T struct {
 	Int     int
 	Uint8   uint8
 	Uintptr uintptr
 	Float32 float32 `json:"f32"`
 	String  string
 	foo     int
+}
+
+func TestStructToMapBad1(t *testing.T) {
+	defer func() {
+		r := recover()
+		e, ok := r.(error)
+		if !ok || e.Error() != "Expected pointer to struct as first argument, got struct" {
+			t.Error(r)
+		}
+	}()
+	m := make(map[string]interface{})
+	StructToMap(T{}, m, "")
+	t.Fatal("should panic")
+}
+
+func TestStructToMapBad2(t *testing.T) {
+	defer func() {
+		r := recover()
+		e, ok := r.(error)
+		if !ok || e.Error() != "Expected pointer to struct as first argument, got pointer to int" {
+			t.Error(r)
+		}
+	}()
+	var i int
+	m := make(map[string]interface{})
+	StructToMap(&i, m, "")
+	t.Fatal("should panic")
+}
+
+func ExampleStructToMap() {
+	type T struct {
+		Uint8   uint8
+		Float32 float32 `json:"f32"` // tag will be used
+		String  string
+		foo     int // not exported
+	}
+	s := T{8, 3.14, "str", 13}
+	m := make(map[string]interface{})
+	StructToMap(&s, m, "json")
+	fmt.Printf("%#v %#v %#v %#v", m["Uint8"], m["f32"], m["String"], m["foo"])
+	// Output:
+	// 0x8 3.14 "str" <nil>
+}
+
+func BenchmarkStructToMap(b *testing.B) {
+	s := T{42, 8, 0xbadcafe, 3.14, "str", 13}
+	m := make(map[string]interface{})
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		StructToMap(&s, m, "json")
+	}
+	b.StopTimer()
+	expected := map[string]interface{}{
+		"Int": 42, "Uint8": uint8(8), "Uintptr": uintptr(0xbadcafe),
+		"f32": float32(3.14), "String": "str",
+	}
+	if !reflect.DeepEqual(expected, m) {
+		b.Fatalf("%#v\n%#v", expected, m)
+	}
 }
 
 func TestMapToStructBad1(t *testing.T) {
@@ -24,7 +83,7 @@ func TestMapToStructBad1(t *testing.T) {
 			t.Error(r)
 		}
 	}()
-	MapToStruct(map[string]interface{}{}, S{}, NoConvert, "")
+	MapToStruct(map[string]interface{}{}, T{}, NoConvert, "")
 	t.Fatal("should panic")
 }
 
@@ -74,16 +133,17 @@ func ExampleMapToStruct() {
 }
 
 func BenchmarkMapToStruct(b *testing.B) {
-	var s S
+	var s T
 	m := map[string]interface{}{
 		"Int": 42, "Uint8": uint8(8), "Uintptr": uintptr(0xbadcafe),
-		"f32": float32(3.14), "String": "str", "foo": 13}
+		"f32": float32(3.14), "String": "str", "foo": 13,
+	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		MapToStruct(m, &s, NoConvert, "json")
 	}
 	b.StopTimer()
-	expected := S{42, 8, 0xbadcafe, 3.14, "str", 0}
+	expected := T{42, 8, 0xbadcafe, 3.14, "str", 0}
 	if !reflect.DeepEqual(expected, s) {
 		b.Fatalf("Expected %#v, got %#v", expected, s)
 	}
@@ -97,7 +157,7 @@ func TestMapsToStructsBad1(t *testing.T) {
 			t.Error(r)
 		}
 	}()
-	var s []S
+	var s []T
 	m := map[string]interface{}{
 		"Int": 42, "Uint8": uint8(8), "Uintptr": uintptr(0xbadcafe),
 		"f32": float32(3.14), "String": "str", "foo": 13,
@@ -163,24 +223,25 @@ func ExampleMapsToStructsNoConvert() {
 func ExampleMapsToStructsStrconv() {
 	type T struct {
 		Uint8   uint8
-		Float32 float32
+		Float32 float32 `json:"f32"`
 		String  string
+		foo     int
 	}
 	var s []T
 	maps := []map[string]interface{}{
-		{"Uint8": 8, "Float32": 3, "String": 42},
-		{"Uint8": "9", "Float32": "4", "String": "43"},
+		{"Uint8": 8, "f32": 3, "String": 42, "foo": 13},
+		{"Uint8": "9", "f32": "4", "String": "43", "foo": "13"},
 	}
 	MapsToStructs(maps, &s, Strconv, "json")
 	fmt.Printf("%+v\n", s[0])
 	fmt.Printf("%+v\n", s[1])
 	// Output:
-	// {Uint8:8 Float32:3 String:42}
-	// {Uint8:9 Float32:4 String:43}
+	// {Uint8:8 Float32:3 String:42 foo:0}
+	// {Uint8:9 Float32:4 String:43 foo:0}
 }
 
 func BenchmarkMapsToStructs(b *testing.B) {
-	var s []S
+	var s []T
 	maps := []map[string]interface{}{
 		{"Int": 42, "Uint8": uint8(8), "Uintptr": uintptr(0xbadcafe)},
 		{"f32": float32(3.14), "String": "str", "foo": 13},
@@ -190,14 +251,14 @@ func BenchmarkMapsToStructs(b *testing.B) {
 		MapsToStructs(maps, &s, NoConvert, "json")
 	}
 	b.StopTimer()
-	expected := []S{{42, 8, 0xbadcafe, 0, "", 0}, {0, 0, 0, 3.14, "str", 0}}
+	expected := []T{{42, 8, 0xbadcafe, 0, "", 0}, {0, 0, 0, 3.14, "str", 0}}
 	if !reflect.DeepEqual(expected, s) {
 		b.Fatalf("Expected %#v, got %#v", expected, s)
 	}
 }
 
 func BenchmarkMapsToStructs2(b *testing.B) {
-	var s []S
+	var s []T
 	maps := []interface{}{
 		map[string]interface{}{"Int": 42, "Uint8": uint8(8), "Uintptr": uintptr(0xbadcafe)},
 		map[string]interface{}{"f32": float32(3.14), "String": "str", "foo": 13},
@@ -207,7 +268,7 @@ func BenchmarkMapsToStructs2(b *testing.B) {
 		MapsToStructs2(maps, &s, NoConvert, "json")
 	}
 	b.StopTimer()
-	expected := []S{{42, 8, 0xbadcafe, 0, "", 0}, {0, 0, 0, 3.14, "str", 0}}
+	expected := []T{{42, 8, 0xbadcafe, 0, "", 0}, {0, 0, 0, 3.14, "str", 0}}
 	if !reflect.DeepEqual(expected, s) {
 		b.Fatalf("Expected %#v, got %#v", expected, s)
 	}

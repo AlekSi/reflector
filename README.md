@@ -4,6 +4,7 @@ reflector [![Build Status](https://secure.travis-ci.org/AlekSi/reflector.png)](h
 This Go package extends standard package reflect with useful utilities:
 
 - convert map to struct
+- convert struct to map
 - convert slice of maps to slice of structs
 
 Install it: `go get github.com/AlekSi/reflector`
