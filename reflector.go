@@ -4,15 +4,101 @@ package reflector
 import (
 	"fmt"
 	"reflect"
-	"runtime"
+	"strconv"
 )
 
-// Converts a map to struct. Only exported struct fields are set.
-// Omitted or extra values in map are ignored.
+// Converts value to kind. Panics if it can't be done.
+type Convertor func(value interface{}, kind reflect.Kind) interface{}
+
+// Requires value to be exactly of specified kind.
+func NoConvert(value interface{}, kind reflect.Kind) interface{} {
+	switch kind {
+	case reflect.Bool:
+		return value.(bool)
+
+	case reflect.Int:
+		return int64(value.(int))
+	case reflect.Int8:
+		return int64(value.(int8))
+	case reflect.Int16:
+		return int64(value.(int16))
+	case reflect.Int32:
+		return int64(value.(int32))
+	case reflect.Int64:
+		return value.(int64)
+
+	case reflect.Uint:
+		return uint64(value.(uint))
+	case reflect.Uint8:
+		return uint64(value.(uint8))
+	case reflect.Uint16:
+		return uint64(value.(uint16))
+	case reflect.Uint32:
+		return uint64(value.(uint32))
+	case reflect.Uint64:
+		return value.(uint64)
+	case reflect.Uintptr:
+		return uint64(value.(uintptr))
+
+	case reflect.Float32:
+		return float64(value.(float32))
+	case reflect.Float64:
+		return value.(float64)
+
+	case reflect.String:
+		return value.(string)
+	}
+
+	panic(fmt.Errorf("Can't convert %#v to %s", value, kind))
+}
+
+// Converts value to kind using strconv.Parse* functions.
+func Strconv(value interface{}, kind reflect.Kind) (res interface{}) {
+	e := fmt.Errorf("can't convert %#v to %s", value, kind)
+	s := fmt.Sprint(value)
+
+	switch kind {
+	case reflect.Bool:
+		res, e = strconv.ParseBool(s)
+		if e != nil {
+			panic(e)
+		}
+		return
+
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		res, e = strconv.ParseInt(s, 10, 64)
+		if e != nil {
+			panic(e)
+		}
+		return
+
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		res, e = strconv.ParseUint(s, 10, 64)
+		if e != nil {
+			panic(e)
+		}
+		return
+
+	case reflect.Float32, reflect.Float64:
+		res, e = strconv.ParseFloat(s, 64)
+		if e != nil {
+			panic(e)
+		}
+		return
+
+	case reflect.String:
+		return s
+	}
+
+	panic(e)
+}
+
+// Converts a map to struct using convertor function.
+// Only exported struct fields are set. Omitted or extra values in map are ignored.
 // Tag may be used to change mapping between struct field and map key.
 // Currently supports bool, ints, uints, floats, strings.
 // Panics in case of error.
-func MapToStruct(m map[string]interface{}, structPointer interface{}, tag string) {
+func MapToStruct(m map[string]interface{}, structPointer interface{}, convertor Convertor, tag string) {
 	structPointerType := reflect.TypeOf(structPointer)
 	if structPointerType.Kind() != reflect.Ptr {
 		panic(fmt.Errorf("Expected pointer to struct as second argument, got %s", structPointerType.Kind()))
@@ -31,11 +117,7 @@ func MapToStruct(m map[string]interface{}, structPointer interface{}, tag string
 			return
 		}
 
-		te, ok := e.(*runtime.TypeAssertionError)
-		if ok {
-			panic(fmt.Errorf("Field %s: %s", name, te))
-		}
-		panic(e)
+		panic(fmt.Errorf("Field %s: %s", name, e))
 	}()
 
 	for i := 0; i < structType.NumField(); i++ {
@@ -56,41 +138,22 @@ func MapToStruct(m map[string]interface{}, structPointer interface{}, tag string
 			continue
 		}
 
-		switch f.Kind() {
+		kind := f.Kind()
+		switch kind {
 		case reflect.Bool:
-			f.SetBool(v.(bool))
+			f.SetBool(convertor(v, kind).(bool))
 
-		case reflect.Int:
-			f.SetInt(int64(v.(int)))
-		case reflect.Int8:
-			f.SetInt(int64(v.(int8)))
-		case reflect.Int16:
-			f.SetInt(int64(v.(int16)))
-		case reflect.Int32:
-			f.SetInt(int64(v.(int32)))
-		case reflect.Int64:
-			f.SetInt(v.(int64))
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			f.SetInt(convertor(v, kind).(int64))
 
-		case reflect.Uint:
-			f.SetUint(uint64(v.(uint)))
-		case reflect.Uint8:
-			f.SetUint(uint64(v.(uint8)))
-		case reflect.Uint16:
-			f.SetUint(uint64(v.(uint16)))
-		case reflect.Uint32:
-			f.SetUint(uint64(v.(uint32)))
-		case reflect.Uint64:
-			f.SetUint(v.(uint64))
-		case reflect.Uintptr:
-			f.SetUint(uint64(v.(uintptr)))
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+			f.SetUint(convertor(v, kind).(uint64))
 
-		case reflect.Float32:
-			f.SetFloat(float64(v.(float32)))
-		case reflect.Float64:
-			f.SetFloat(v.(float64))
+		case reflect.Float32, reflect.Float64:
+			f.SetFloat(convertor(v, kind).(float64))
 
 		case reflect.String:
-			f.SetString(v.(string))
+			f.SetString(convertor(v, kind).(string))
 
 		default:
 			// not implemented
@@ -100,7 +163,7 @@ func MapToStruct(m map[string]interface{}, structPointer interface{}, tag string
 }
 
 // Converts a slice of maps to a slice of structs. Uses MapToStruct().
-func MapsToStructs(s []map[string]interface{}, slicePointer interface{}, tag string) {
+func MapsToStructs(s []map[string]interface{}, slicePointer interface{}, convertor Convertor, tag string) {
 	slicePointerType := reflect.TypeOf(slicePointer)
 	if slicePointerType.Kind() != reflect.Ptr {
 		panic(fmt.Errorf("Expected pointer to slice of structs as second argument, got %s", slicePointerType.Kind()))
@@ -119,17 +182,17 @@ func MapsToStructs(s []map[string]interface{}, slicePointer interface{}, tag str
 	slice := reflect.MakeSlice(sliceType, 0, len(s))
 	for _, m := range s {
 		str := reflect.New(structType)
-		MapToStruct(m, str.Interface(), tag)
+		MapToStruct(m, str.Interface(), convertor, tag)
 		slice = reflect.Append(slice, str.Elem())
 	}
 	reflect.ValueOf(slicePointer).Elem().Set(slice)
 }
 
 // Variant of MapsToStructs() with relaxed signature.
-func MapsToStructs2(s []interface{}, slicePointer interface{}, tag string) {
+func MapsToStructs2(s []interface{}, slicePointer interface{}, convertor Convertor, tag string) {
 	m := make([]map[string]interface{}, len(s))
 	for index, i := range s {
 		m[index] = i.(map[string]interface{})
 	}
-	MapsToStructs(m, slicePointer, tag)
+	MapsToStructs(m, slicePointer, convertor, tag)
 }

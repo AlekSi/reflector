@@ -24,7 +24,7 @@ func TestMapToStructBad1(t *testing.T) {
 			t.Error(r)
 		}
 	}()
-	MapToStruct(map[string]interface{}{}, S{}, "")
+	MapToStruct(map[string]interface{}{}, S{}, NoConvert, "")
 	t.Fatal("should panic")
 }
 
@@ -37,7 +37,7 @@ func TestMapToStructBad2(t *testing.T) {
 		}
 	}()
 	var i int
-	MapToStruct(map[string]interface{}{}, &i, "")
+	MapToStruct(map[string]interface{}{}, &i, NoConvert, "")
 	t.Fatal("should panic")
 }
 
@@ -54,7 +54,7 @@ func TestMapToStructWrongType(t *testing.T) {
 	}
 	var s T
 	m := map[string]interface{}{"Uint8": 8}
-	MapToStruct(m, &s, "")
+	MapToStruct(m, &s, NoConvert, "")
 	t.Fatal("should panic")
 }
 
@@ -67,7 +67,7 @@ func ExampleMapToStruct() {
 	}
 	var s T
 	m := map[string]interface{}{"Uint8": uint8(8), "f32": float32(3.14), "foo": 13}
-	MapToStruct(m, &s, "json")
+	MapToStruct(m, &s, NoConvert, "json")
 	fmt.Printf("%+v", s)
 	// Output:
 	// {Uint8:8 Float32:3.14 String: foo:0}
@@ -80,7 +80,7 @@ func BenchmarkMapToStruct(b *testing.B) {
 		"f32": float32(3.14), "String": "str", "foo": 13}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		MapToStruct(m, &s, "json")
+		MapToStruct(m, &s, NoConvert, "json")
 	}
 	b.StopTimer()
 	expected := S{42, 8, 0xbadcafe, 3.14, "str", 0}
@@ -102,7 +102,7 @@ func TestMapsToStructsBad1(t *testing.T) {
 		"Int": 42, "Uint8": uint8(8), "Uintptr": uintptr(0xbadcafe),
 		"f32": float32(3.14), "String": "str", "foo": 13,
 	}
-	MapsToStructs([]map[string]interface{}{m}, s, "json")
+	MapsToStructs([]map[string]interface{}{m}, s, NoConvert, "json")
 	t.Fatal("should panic")
 }
 
@@ -119,7 +119,7 @@ func TestMapsToStructsBad2(t *testing.T) {
 		"Int": 42, "Uint8": uint8(8), "Uintptr": uintptr(0xbadcafe),
 		"f32": float32(3.14), "String": "str", "foo": 13,
 	}
-	MapsToStructs([]map[string]interface{}{m}, s, "json")
+	MapsToStructs([]map[string]interface{}{m}, s, NoConvert, "json")
 	t.Fatal("should panic")
 }
 
@@ -136,11 +136,11 @@ func TestMapsToStructsBad3(t *testing.T) {
 		"Int": 42, "Uint8": uint8(8), "Uintptr": uintptr(0xbadcafe),
 		"f32": float32(3.14), "String": "str", "foo": 13,
 	}
-	MapsToStructs([]map[string]interface{}{m}, s, "json")
+	MapsToStructs([]map[string]interface{}{m}, s, NoConvert, "json")
 	t.Fatal("should panic")
 }
 
-func ExampleMapsToStructs() {
+func ExampleMapsToStructsNoConvert() {
 	type T struct {
 		Uint8   uint8   // no automatic type conversion
 		Float32 float32 `json:"f32"` // tag will be used
@@ -152,12 +152,31 @@ func ExampleMapsToStructs() {
 		{"Uint8": uint8(8)},
 		{"f32": float32(3.14), "String": "str", "foo": 13},
 	}
-	MapsToStructs(maps, &s, "json")
+	MapsToStructs(maps, &s, NoConvert, "json")
 	fmt.Printf("%+v\n", s[0])
 	fmt.Printf("%+v\n", s[1])
 	// Output:
 	// {Uint8:8 Float32:0 String: foo:0}
 	// {Uint8:0 Float32:3.14 String:str foo:0}
+}
+
+func ExampleMapsToStructsStrconv() {
+	type T struct {
+		Uint8   uint8
+		Float32 float32
+		String  string
+	}
+	var s []T
+	maps := []map[string]interface{}{
+		{"Uint8": 8, "Float32": 3, "String": 42},
+		{"Uint8": "9", "Float32": "4", "String": "43"},
+	}
+	MapsToStructs(maps, &s, Strconv, "json")
+	fmt.Printf("%+v\n", s[0])
+	fmt.Printf("%+v\n", s[1])
+	// Output:
+	// {Uint8:8 Float32:3 String:42}
+	// {Uint8:9 Float32:4 String:43}
 }
 
 func BenchmarkMapsToStructs(b *testing.B) {
@@ -168,7 +187,7 @@ func BenchmarkMapsToStructs(b *testing.B) {
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		MapsToStructs(maps, &s, "json")
+		MapsToStructs(maps, &s, NoConvert, "json")
 	}
 	b.StopTimer()
 	expected := []S{{42, 8, 0xbadcafe, 0, "", 0}, {0, 0, 0, 3.14, "str", 0}}
@@ -185,7 +204,7 @@ func BenchmarkMapsToStructs2(b *testing.B) {
 	}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		MapsToStructs2(maps, &s, "json")
+		MapsToStructs2(maps, &s, NoConvert, "json")
 	}
 	b.StopTimer()
 	expected := []S{{42, 8, 0xbadcafe, 0, "", 0}, {0, 0, 0, 3.14, "str", 0}}
