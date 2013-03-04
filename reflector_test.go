@@ -24,8 +24,8 @@ func TestStructToMapBad1(t *testing.T) {
 			t.Error(r)
 		}
 	}()
-	var m map[string]interface{}
-	StructToMap(T{}, &m, "")
+	m := make(map[string]interface{})
+	StructToMap(T{}, m, "")
 	t.Fatal("should panic")
 }
 
@@ -38,8 +38,8 @@ func TestStructToMapBad2(t *testing.T) {
 		}
 	}()
 	var i int
-	var m map[string]interface{}
-	StructToMap(&i, &m, "")
+	m := make(map[string]interface{})
+	StructToMap(&i, m, "")
 	t.Fatal("should panic")
 }
 
@@ -51,8 +51,8 @@ func ExampleStructToMap() {
 		foo     int // not exported
 	}
 	s := T{8, 3.14, "str", 13}
-	var m map[string]interface{}
-	StructToMap(&s, &m, "json")
+	m := make(map[string]interface{})
+	StructToMap(&s, m, "json")
 	fmt.Printf("%#v %#v %#v %#v", m["Uint8"], m["f32"], m["String"], m["foo"])
 	// Output:
 	// 0x8 3.14 "str" <nil>
@@ -60,10 +60,10 @@ func ExampleStructToMap() {
 
 func BenchmarkStructToMap(b *testing.B) {
 	s := T{42, 8, 0xbadcafe, 3.14, "str", 13}
-	var m map[string]interface{}
+	m := make(map[string]interface{})
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		StructToMap(&s, &m, "json")
+		StructToMap(&s, m, "json")
 	}
 	b.StopTimer()
 	expected := map[string]interface{}{

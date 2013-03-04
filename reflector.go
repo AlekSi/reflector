@@ -98,7 +98,7 @@ func Strconv(value interface{}, kind reflect.Kind) (res interface{}) {
 // Tag may be used to change mapping between struct field and map key.
 // Currently supports bool, ints, uints, floats, strings.
 // Panics in case of error.
-func StructToMap(structPointer interface{}, mapPointer *map[string]interface{}, tag string) {
+func StructToMap(structPointer interface{}, m map[string]interface{}, tag string) {
 	structPointerType := reflect.TypeOf(structPointer)
 	if structPointerType.Kind() != reflect.Ptr {
 		panic(fmt.Errorf("Expected pointer to struct as first argument, got %s", structPointerType.Kind()))
@@ -110,7 +110,6 @@ func StructToMap(structPointer interface{}, mapPointer *map[string]interface{}, 
 	}
 
 	s := reflect.ValueOf(structPointer).Elem()
-	m := make(map[string]interface{}, structType.NumField())
 
 	var name string
 	for i := 0; i < structType.NumField(); i++ {
@@ -129,7 +128,6 @@ func StructToMap(structPointer interface{}, mapPointer *map[string]interface{}, 
 
 		m[name] = f.Interface()
 	}
-	*mapPointer = m
 }
 
 // Converts a map to struct using converter function.
@@ -202,7 +200,7 @@ func MapToStruct(m map[string]interface{}, structPointer interface{}, converter 
 }
 
 // Converts a slice of maps to a slice of structs. Uses MapToStruct().
-func MapsToStructs(s []map[string]interface{}, slicePointer interface{}, converter Converter, tag string) {
+func MapsToStructs(maps []map[string]interface{}, slicePointer interface{}, converter Converter, tag string) {
 	slicePointerType := reflect.TypeOf(slicePointer)
 	if slicePointerType.Kind() != reflect.Ptr {
 		panic(fmt.Errorf("Expected pointer to slice of structs as second argument, got %s", slicePointerType.Kind()))
@@ -218,8 +216,8 @@ func MapsToStructs(s []map[string]interface{}, slicePointer interface{}, convert
 		panic(fmt.Errorf("Expected pointer to slice of structs as second argument, got pointer to slice of %s", structType.Kind()))
 	}
 
-	slice := reflect.MakeSlice(sliceType, 0, len(s))
-	for _, m := range s {
+	slice := reflect.MakeSlice(sliceType, 0, len(maps))
+	for _, m := range maps {
 		str := reflect.New(structType)
 		MapToStruct(m, str.Interface(), converter, tag)
 		slice = reflect.Append(slice, str.Elem())
@@ -228,9 +226,9 @@ func MapsToStructs(s []map[string]interface{}, slicePointer interface{}, convert
 }
 
 // Variant of MapsToStructs() with relaxed signature.
-func MapsToStructs2(s []interface{}, slicePointer interface{}, converter Converter, tag string) {
-	m := make([]map[string]interface{}, len(s))
-	for index, i := range s {
+func MapsToStructs2(maps []interface{}, slicePointer interface{}, converter Converter, tag string) {
+	m := make([]map[string]interface{}, len(maps))
+	for index, i := range maps {
 		m[index] = i.(map[string]interface{})
 	}
 	MapsToStructs(m, slicePointer, converter, tag)
