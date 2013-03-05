@@ -150,6 +150,31 @@ func StructValueToMap(Struct interface{}, Map map[string]interface{}, tag string
 	StructToMap(v.Interface(), Map, tag)
 }
 
+func StructsToMaps(Structs interface{}, Maps *[]map[string]interface{}, tag string) {
+	sliceType := reflect.TypeOf(Structs)
+	if sliceType.Kind() != reflect.Slice {
+		panic(fmt.Errorf("Expected slice of structs as first argument, got %s", sliceType.Kind()))
+	}
+
+	structType := sliceType.Elem()
+	if structType.Kind() != reflect.Struct {
+		panic(fmt.Errorf("Expected slice of structs as first argument, got slice of %s", structType.Kind()))
+	}
+
+	structs := reflect.ValueOf(Structs)
+	l := structs.Len()
+	maps := reflect.MakeSlice(reflect.TypeOf(*Maps), 0, l)
+
+	for i := 0; i < l; i++ {
+		m := make(map[string]interface{})
+		s := structs.Index(i)
+		StructValueToMap(s.Interface(), m, tag)
+		maps = reflect.Append(maps, reflect.ValueOf(m))
+	}
+
+	reflect.ValueOf(Maps).Elem().Set(maps)
+}
+
 // Converts a map to struct using converter function.
 // First argument is a map.
 // Second argument is a not-nil pointer to struct which will be modified.
