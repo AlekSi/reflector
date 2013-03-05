@@ -94,6 +94,8 @@ func Strconv(value interface{}, kind reflect.Kind) (res interface{}) {
 }
 
 // Converts a struct to map.
+// First argument is a pointer to struct.
+// Second argument is a not-nil map which will be modified.
 // Only exported struct fields are used.
 // Tag may be used to change mapping between struct field and map key.
 // Currently supports bool, ints, uints, floats, strings.
@@ -131,6 +133,8 @@ func StructToMap(structPointer interface{}, m map[string]interface{}, tag string
 }
 
 // Converts a map to struct using converter function.
+// First argument is a map.
+// Second argument is a not-nil pointer to struct which will be modified.
 // Only exported struct fields are set. Omitted or extra values in map are ignored.
 // Tag may be used to change mapping between struct field and map key.
 // Currently supports bool, ints, uints, floats, strings.
@@ -196,10 +200,13 @@ func MapToStruct(m map[string]interface{}, structPointer interface{}, converter 
 			// not implemented
 		}
 	}
+
 	return
 }
 
 // Converts a slice of maps to a slice of structs. Uses MapToStruct().
+// First argument is a slice of maps.
+// Second argument is a pointer to (possibly nil) slice of structs which will be set.
 func MapsToStructs(maps []map[string]interface{}, slicePointer interface{}, converter Converter, tag string) {
 	slicePointerType := reflect.TypeOf(slicePointer)
 	if slicePointerType.Kind() != reflect.Ptr {
