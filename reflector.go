@@ -49,12 +49,12 @@ func NoConvert(value interface{}, kind reflect.Kind) interface{} {
 		return value.(string)
 	}
 
-	panic(fmt.Errorf("Can't convert %#v to %s", value, kind))
+	panic(fmt.Errorf("NoConvert: can't convert %#v to %s", value, kind))
 }
 
 // Converter: uses strconv.Parse* functions.
 func Strconv(value interface{}, kind reflect.Kind) (res interface{}) {
-	e := fmt.Errorf("can't convert %#v to %s", value, kind)
+	e := fmt.Errorf("Strconv: can't convert %#v to %s", value, kind)
 	s := fmt.Sprint(value)
 
 	switch kind {
@@ -103,12 +103,12 @@ func Strconv(value interface{}, kind reflect.Kind) (res interface{}) {
 func StructToMap(structPointer interface{}, m map[string]interface{}, tag string) {
 	structPointerType := reflect.TypeOf(structPointer)
 	if structPointerType.Kind() != reflect.Ptr {
-		panic(fmt.Errorf("Expected pointer to struct as first argument, got %s", structPointerType.Kind()))
+		panic(fmt.Errorf("StructToMap: expected pointer to struct as first argument, got %s", structPointerType.Kind()))
 	}
 
 	structType := structPointerType.Elem()
 	if structType.Kind() != reflect.Struct {
-		panic(fmt.Errorf("Expected pointer to struct as first argument, got pointer to %s", structType.Kind()))
+		panic(fmt.Errorf("StructToMap: expected pointer to struct as first argument, got pointer to %s", structType.Kind()))
 	}
 
 	s := reflect.ValueOf(structPointer).Elem()
@@ -121,6 +121,7 @@ func StructToMap(structPointer interface{}, m map[string]interface{}, tag string
 		}
 
 		stf := structType.Field(i)
+		name = ""
 		if tag != "" {
 			name = stf.Tag.Get(tag)
 		}
@@ -142,12 +143,12 @@ func StructToMap(structPointer interface{}, m map[string]interface{}, tag string
 func MapToStruct(m map[string]interface{}, structPointer interface{}, converter Converter, tag string) {
 	structPointerType := reflect.TypeOf(structPointer)
 	if structPointerType.Kind() != reflect.Ptr {
-		panic(fmt.Errorf("Expected pointer to struct as second argument, got %s", structPointerType.Kind()))
+		panic(fmt.Errorf("MapToStruct: expected pointer to struct as second argument, got %s", structPointerType.Kind()))
 	}
 
 	structType := structPointerType.Elem()
 	if structType.Kind() != reflect.Struct {
-		panic(fmt.Errorf("Expected pointer to struct as second argument, got pointer to %s", structType.Kind()))
+		panic(fmt.Errorf("MapToStruct: expected pointer to struct as second argument, got pointer to %s", structType.Kind()))
 	}
 	s := reflect.ValueOf(structPointer).Elem()
 
@@ -158,7 +159,7 @@ func MapToStruct(m map[string]interface{}, structPointer interface{}, converter 
 			return
 		}
 
-		panic(fmt.Errorf("Field %s: %s", name, e))
+		panic(fmt.Errorf("MapToStruct, field %s: %s", name, e))
 	}()
 
 	for i := 0; i < structType.NumField(); i++ {
@@ -168,6 +169,7 @@ func MapToStruct(m map[string]interface{}, structPointer interface{}, converter 
 		}
 
 		stf := structType.Field(i)
+		name = ""
 		if tag != "" {
 			name = stf.Tag.Get(tag)
 		}
@@ -210,17 +212,17 @@ func MapToStruct(m map[string]interface{}, structPointer interface{}, converter 
 func MapsToStructs(maps []map[string]interface{}, slicePointer interface{}, converter Converter, tag string) {
 	slicePointerType := reflect.TypeOf(slicePointer)
 	if slicePointerType.Kind() != reflect.Ptr {
-		panic(fmt.Errorf("Expected pointer to slice of structs as second argument, got %s", slicePointerType.Kind()))
+		panic(fmt.Errorf("MapsToStructs: expected pointer to slice of structs as second argument, got %s", slicePointerType.Kind()))
 	}
 
 	sliceType := slicePointerType.Elem()
 	if sliceType.Kind() != reflect.Slice {
-		panic(fmt.Errorf("Expected pointer to slice of structs as second argument, got pointer to %s", sliceType.Kind()))
+		panic(fmt.Errorf("MapsToStructs: expected pointer to slice of structs as second argument, got pointer to %s", sliceType.Kind()))
 	}
 
 	structType := sliceType.Elem()
 	if structType.Kind() != reflect.Struct {
-		panic(fmt.Errorf("Expected pointer to slice of structs as second argument, got pointer to slice of %s", structType.Kind()))
+		panic(fmt.Errorf("MapsToStructs: expected pointer to slice of structs as second argument, got pointer to slice of %s", structType.Kind()))
 	}
 
 	slice := reflect.MakeSlice(sliceType, 0, len(maps))

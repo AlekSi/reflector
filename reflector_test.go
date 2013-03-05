@@ -20,7 +20,7 @@ func TestStructToMapBad1(t *testing.T) {
 	defer func() {
 		r := recover()
 		e, ok := r.(error)
-		if !ok || e.Error() != "Expected pointer to struct as first argument, got struct" {
+		if !ok || e.Error() != "StructToMap: expected pointer to struct as first argument, got struct" {
 			t.Error(r)
 		}
 	}()
@@ -33,7 +33,7 @@ func TestStructToMapBad2(t *testing.T) {
 	defer func() {
 		r := recover()
 		e, ok := r.(error)
-		if !ok || e.Error() != "Expected pointer to struct as first argument, got pointer to int" {
+		if !ok || e.Error() != "StructToMap: expected pointer to struct as first argument, got pointer to int" {
 			t.Error(r)
 		}
 	}()
@@ -79,7 +79,7 @@ func TestMapToStructBad1(t *testing.T) {
 	defer func() {
 		r := recover()
 		e, ok := r.(error)
-		if !ok || e.Error() != "Expected pointer to struct as second argument, got struct" {
+		if !ok || e.Error() != "MapToStruct: expected pointer to struct as second argument, got struct" {
 			t.Error(r)
 		}
 	}()
@@ -91,7 +91,7 @@ func TestMapToStructBad2(t *testing.T) {
 	defer func() {
 		r := recover()
 		e, ok := r.(error)
-		if !ok || e.Error() != "Expected pointer to struct as second argument, got pointer to int" {
+		if !ok || e.Error() != "MapToStruct: expected pointer to struct as second argument, got pointer to int" {
 			t.Error(r)
 		}
 	}()
@@ -104,7 +104,7 @@ func TestMapToStructWrongType(t *testing.T) {
 	defer func() {
 		r := recover()
 		e, ok := r.(error)
-		if !ok || e.Error() != "Field Uint8: interface conversion: interface is int, not uint8" {
+		if !ok || e.Error() != "MapToStruct, field Uint8: interface conversion: interface is int, not uint8" {
 			t.Error(r)
 		}
 	}()
@@ -153,7 +153,7 @@ func TestMapsToStructsBad1(t *testing.T) {
 	defer func() {
 		r := recover()
 		e, ok := r.(error)
-		if !ok || e.Error() != "Expected pointer to slice of structs as second argument, got slice" {
+		if !ok || e.Error() != "MapsToStructs: expected pointer to slice of structs as second argument, got slice" {
 			t.Error(r)
 		}
 	}()
@@ -170,7 +170,7 @@ func TestMapsToStructsBad2(t *testing.T) {
 	defer func() {
 		r := recover()
 		e, ok := r.(error)
-		if !ok || e.Error() != "Expected pointer to slice of structs as second argument, got pointer to int" {
+		if !ok || e.Error() != "MapsToStructs: expected pointer to slice of structs as second argument, got pointer to int" {
 			t.Error(r)
 		}
 	}()
@@ -187,7 +187,7 @@ func TestMapsToStructsBad3(t *testing.T) {
 	defer func() {
 		r := recover()
 		e, ok := r.(error)
-		if !ok || e.Error() != "Expected pointer to slice of structs as second argument, got pointer to slice of int" {
+		if !ok || e.Error() != "MapsToStructs: expected pointer to slice of structs as second argument, got pointer to slice of int" {
 			t.Error(r)
 		}
 	}()
