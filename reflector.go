@@ -115,12 +115,11 @@ func StructToMap(StructPointer interface{}, Map map[string]interface{}, tag stri
 
 	var name string
 	for i := 0; i < structType.NumField(); i++ {
-		f := s.Field(i)
-		if !f.CanSet() {
+		stf := structType.Field(i)
+		if stf.PkgPath != "" {
 			continue
 		}
 
-		stf := structType.Field(i)
 		name = ""
 		if tag != "" {
 			name = stf.Tag.Get(tag)
@@ -129,8 +128,26 @@ func StructToMap(StructPointer interface{}, Map map[string]interface{}, tag stri
 			name = stf.Name
 		}
 
-		Map[name] = f.Interface()
+		Map[name] = s.Field(i).Interface()
 	}
+}
+
+// Converts a struct to map. Uses StructToMap().
+// First argument is a struct.
+// Second argument is a not-nil map which will be modified.
+// Only exported struct fields are used.
+// Tag may be used to change mapping between struct field and map key.
+// Currently supports bool, ints, uints, floats, strings.
+// Panics in case of error.
+func StructValueToMap(Struct interface{}, Map map[string]interface{}, tag string) {
+	structType := reflect.TypeOf(Struct)
+	if structType.Kind() != reflect.Struct {
+		panic(fmt.Errorf("StructValueToMap: expected struct as first argument, got %s", structType.Kind()))
+	}
+
+	v := reflect.New(reflect.TypeOf(Struct))
+	v.Elem().Set(reflect.ValueOf(Struct))
+	StructToMap(v.Interface(), Map, tag)
 }
 
 // Converts a map to struct using converter function.

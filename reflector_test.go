@@ -58,6 +58,21 @@ func ExampleStructToMap() {
 	// 0x8 3.14 "str" <nil>
 }
 
+func ExampleStructValueToMap() {
+	type T struct {
+		Uint8   uint8
+		Float32 float32 `json:"f32"` // tag will be used
+		String  string
+		foo     int // not exported
+	}
+	s := T{8, 3.14, "str", 13}
+	m := make(map[string]interface{})
+	StructValueToMap(s, m, "json")
+	fmt.Printf("%#v %#v %#v %#v", m["Uint8"], m["f32"], m["String"], m["foo"])
+	// Output:
+	// 0x8 3.14 "str" <nil>
+}
+
 func BenchmarkStructToMap(b *testing.B) {
 	s := T{42, 8, 0xbadcafe, 3.14, "str", 13}
 	m := make(map[string]interface{})
