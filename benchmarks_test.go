@@ -23,6 +23,40 @@ func BenchmarkStructToMap(b *testing.B) {
 	}
 }
 
+func BenchmarkStructValueToMap(b *testing.B) {
+	s := T{42, 8, 0xbadcafe, 3.14, "str", 13}
+	m := make(map[string]interface{})
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		StructValueToMap(s, m, "json")
+	}
+	b.StopTimer()
+	expected := map[string]interface{}{
+		"Int": 42, "Uint8": uint8(8), "Uintptr": uintptr(0xbadcafe),
+		"f32": float32(3.14), "String": "str",
+	}
+	if !reflect.DeepEqual(expected, m) {
+		b.Fatalf("%#v\n%#v", expected, m)
+	}
+}
+
+func BenchmarkStructsToMaps(b *testing.B) {
+	s := []T{{42, 8, 0xbadcafe, 3.14, "str", 13}}
+	var m []map[string]interface{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		StructsToMaps(s, &m, "json")
+	}
+	b.StopTimer()
+	expected := []map[string]interface{}{{
+		"Int": 42, "Uint8": uint8(8), "Uintptr": uintptr(0xbadcafe),
+		"f32": float32(3.14), "String": "str",
+	}}
+	if !reflect.DeepEqual(expected, m) {
+		b.Fatalf("%#v\n%#v", expected, m)
+	}
+}
+
 func BenchmarkMapToStruct(b *testing.B) {
 	var s T
 	m := map[string]interface{}{
