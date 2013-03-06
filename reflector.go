@@ -150,6 +150,9 @@ func StructValueToMap(Struct interface{}, Map map[string]interface{}, tag string
 	StructToMap(v.Interface(), Map, tag)
 }
 
+// Converts a slice of structs to a slice of maps. Uses StructValueToMap().
+// First argument is a slice of structs.
+// Second argument is a pointer to (possibly nil) slice of maps which will be set.
 func StructsToMaps(Structs interface{}, Maps *[]map[string]interface{}, tag string) {
 	sliceType := reflect.TypeOf(Structs)
 	if sliceType.Kind() != reflect.Slice {
@@ -163,12 +166,11 @@ func StructsToMaps(Structs interface{}, Maps *[]map[string]interface{}, tag stri
 
 	structs := reflect.ValueOf(Structs)
 	l := structs.Len()
-	maps := reflect.MakeSlice(reflect.TypeOf(*Maps), 0, l)
+	maps := reflect.MakeSlice(reflect.TypeOf([]map[string]interface{}{}), 0, l)
 
 	for i := 0; i < l; i++ {
 		m := make(map[string]interface{})
-		s := structs.Index(i)
-		StructValueToMap(s.Interface(), m, tag)
+		StructValueToMap(structs.Index(i).Interface(), m, tag)
 		maps = reflect.Append(maps, reflect.ValueOf(m))
 	}
 
