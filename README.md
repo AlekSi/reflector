@@ -6,6 +6,7 @@ This Go package extends standard package reflect with useful utilities:
 - convert map to struct
 - convert struct to map
 - convert slice of maps to slice of structs
+- convert slice of structs to slice of maps
 
 Install it: `go get github.com/AlekSi/reflector`
 
