@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 // Converts value to kind. Panics if it can't be done.
@@ -122,7 +123,7 @@ func StructToMap(StructPointer interface{}, Map map[string]interface{}, tag stri
 
 		name = ""
 		if tag != "" {
-			name = stf.Tag.Get(tag)
+			name = strings.Split(stf.Tag.Get(tag), ",")[0]
 		}
 		if name == "" {
 			name = stf.Name
@@ -215,7 +216,7 @@ func MapToStruct(Map map[string]interface{}, StructPointer interface{}, converte
 		stf := structType.Field(i)
 		name = ""
 		if tag != "" {
-			name = stf.Tag.Get(tag)
+			name = strings.Split(stf.Tag.Get(tag), ",")[0]
 		}
 		if name == "" {
 			name = stf.Name
