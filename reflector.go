@@ -124,6 +124,9 @@ func StructToMap(StructPointer interface{}, Map map[string]interface{}, tag stri
 		name = ""
 		if tag != "" {
 			name = strings.Split(stf.Tag.Get(tag), ",")[0]
+			if name == "-" {
+				continue
+			}
 		}
 		if name == "" {
 			name = stf.Name
@@ -217,6 +220,9 @@ func MapToStruct(Map map[string]interface{}, StructPointer interface{}, converte
 		name = ""
 		if tag != "" {
 			name = strings.Split(stf.Tag.Get(tag), ",")[0]
+			if name == "-" {
+				continue
+			}
 		}
 		if name == "" {
 			name = stf.Name
