@@ -184,9 +184,9 @@ func StructsToMaps(Structs interface{}, Maps *[]map[string]interface{}, tag stri
 // Converts a map to struct using converter function.
 // First argument is a map.
 // Second argument is a not-nil pointer to struct which will be modified.
-// Only exported struct fields are set. Omitted or extra values in map are ignored.
+// Only exported struct fields are set. Omitted or extra values in map are ignored. Pointers will be set.
 // Tag may be used to change mapping between struct field and map key.
-// Currently supports bool, ints, uints, floats, strings.
+// Currently supports bool, ints, uints, floats, strings and pointer to them.
 // Panics in case of error.
 func MapToStruct(Map map[string]interface{}, StructPointer interface{}, converter Converter, tag string) {
 	structPointerType := reflect.TypeOf(StructPointer)

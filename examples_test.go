@@ -56,7 +56,7 @@ func ExampleStructsToMaps() {
 	// 0x8 3.14 "str" "pstr" <nil>
 }
 
-func ExampleMapToStructNoConvert() {
+func ExampleMapToStruct_NoConvert() {
 	type T struct {
 		Uint8   uint8   // no automatic type conversion
 		Float32 float32 `json:"f32"` // tag will be used
@@ -73,7 +73,24 @@ func ExampleMapToStructNoConvert() {
 	// 0x8 3.14 "" "pstr" 0
 }
 
-func ExampleMapsToStructsNoConvert() {
+func ExampleMapToStruct_Strconv() {
+	type T struct {
+		Uint8   uint8   // type conversion via strconv
+		Float32 float32 `json:"f32"` // tag will be used
+		String  string  // not present in map, will not be set
+		Pstring *string // value will be deep-copied
+		foo     int     // not exported, will not be set
+	}
+	var s T
+	m := map[string]interface{}{"Uint8": 8, "f32": 3, "Pstring": "pstr", "foo": 13}
+	MapToStruct(m, &s, Strconv, "json")
+	m["Pstring"] = "foo"
+	fmt.Printf("%#v %#v %#v %#v %#v\n", s.Uint8, s.Float32, s.String, *s.Pstring, s.foo)
+	// Output:
+	// 0x8 3 "" "pstr" 0
+}
+
+func ExampleMapsToStructs_NoConvert() {
 	type T struct {
 		Uint8   uint8   // no automatic type conversion
 		Float32 float32 `json:"f32"` // tag will be used
@@ -94,7 +111,7 @@ func ExampleMapsToStructsNoConvert() {
 	// 0x0 3.14 "str" (*string)(nil) 0
 }
 
-func ExampleMapsToStructsStrconv() {
+func ExampleMapsToStructs_Strconv() {
 	type T struct {
 		Uint8   uint8   // type conversion via strconv
 		Float32 float32 `json:"f32"` // tag will be used
