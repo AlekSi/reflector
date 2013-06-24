@@ -56,7 +56,7 @@ func ExampleStructsToMaps() {
 	// 0x8 3.14 "str" "pstr" <nil>
 }
 
-func ExampleMapToStruct_NoConvert() {
+func ExampleMapToStruct_noConvert() {
 	type T struct {
 		Uint8   uint8   // no automatic type conversion
 		Float32 float32 `json:"f32"` // tag will be used
@@ -73,7 +73,7 @@ func ExampleMapToStruct_NoConvert() {
 	// 0x8 3.14 "" "pstr" 0
 }
 
-func ExampleMapToStruct_Strconv() {
+func ExampleMapToStruct_strconv() {
 	type T struct {
 		Uint8   uint8   // type conversion via strconv
 		Float32 float32 `json:"f32"` // tag will be used
@@ -90,7 +90,7 @@ func ExampleMapToStruct_Strconv() {
 	// 0x8 3 "" "pstr" 0
 }
 
-func ExampleMapsToStructs_NoConvert() {
+func ExampleMapsToStructs_noConvert() {
 	type T struct {
 		Uint8   uint8   // no automatic type conversion
 		Float32 float32 `json:"f32"` // tag will be used
@@ -111,7 +111,7 @@ func ExampleMapsToStructs_NoConvert() {
 	// 0x0 3.14 "str" (*string)(nil) 0
 }
 
-func ExampleMapsToStructs_Strconv() {
+func ExampleMapsToStructs_strconv() {
 	type T struct {
 		Uint8   uint8   // type conversion via strconv
 		Float32 float32 `json:"f32"` // tag will be used
