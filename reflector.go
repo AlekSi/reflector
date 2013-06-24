@@ -97,9 +97,9 @@ func Strconv(value interface{}, kind reflect.Kind) (res interface{}) {
 // Converts a struct to map.
 // First argument is a pointer to struct.
 // Second argument is a not-nil map which will be modified.
-// Only exported struct fields are used.
+// Only exported struct fields are used. Pointers will be followed.
 // Tag may be used to change mapping between struct field and map key.
-// Currently supports bool, ints, uints, floats, strings.
+// Currently supports bool, ints, uints, floats, strings and pointer to them.
 // Panics in case of error.
 func StructToMap(StructPointer interface{}, Map map[string]interface{}, tag string) {
 	structPointerType := reflect.TypeOf(StructPointer)
@@ -132,16 +132,16 @@ func StructToMap(StructPointer interface{}, Map map[string]interface{}, tag stri
 			name = stf.Name
 		}
 
-		Map[name] = s.Field(i).Interface()
+		Map[name] = reflect.Indirect(s.Field(i)).Interface()
 	}
 }
 
 // Converts a struct to map. Uses StructToMap().
 // First argument is a struct.
 // Second argument is a not-nil map which will be modified.
-// Only exported struct fields are used.
+// Only exported struct fields are used. Pointers will be followed.
 // Tag may be used to change mapping between struct field and map key.
-// Currently supports bool, ints, uints, floats, strings.
+// Currently supports bool, ints, uints, floats, strings and pointer to them.
 // Panics in case of error.
 func StructValueToMap(Struct interface{}, Map map[string]interface{}, tag string) {
 	structType := reflect.TypeOf(Struct)

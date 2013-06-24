@@ -10,14 +10,16 @@ func ExampleStructToMap() {
 		Uint8   uint8
 		Float32 float32 `json:"f32"` // tag will be used
 		String  string
-		foo     int // not exported
+		Pstring *string // pointer will be followed
+		foo     int     // not exported
 	}
-	s := T{8, 3.14, "str", 13}
+	pstr := "pstr"
+	s := T{8, 3.14, "str", &pstr, 13}
 	m := make(map[string]interface{})
 	StructToMap(&s, m, "json")
-	fmt.Printf("%#v %#v %#v %#v", m["Uint8"], m["f32"], m["String"], m["foo"])
+	fmt.Printf("%#v %#v %#v %#v %#v", m["Uint8"], m["f32"], m["String"], m["Pstring"], m["foo"])
 	// Output:
-	// 0x8 3.14 "str" <nil>
+	// 0x8 3.14 "str" "pstr" <nil>
 }
 
 func ExampleStructValueToMap() {
@@ -25,14 +27,16 @@ func ExampleStructValueToMap() {
 		Uint8   uint8
 		Float32 float32 `json:"f32"` // tag will be used
 		String  string
-		foo     int // not exported
+		Pstring *string // pointer will be followed
+		foo     int     // not exported
 	}
-	s := T{8, 3.14, "str", 13}
+	pstr := "pstr"
+	s := T{8, 3.14, "str", &pstr, 13}
 	m := make(map[string]interface{})
 	StructValueToMap(s, m, "json")
-	fmt.Printf("%#v %#v %#v %#v", m["Uint8"], m["f32"], m["String"], m["foo"])
+	fmt.Printf("%#v %#v %#v %#v %#v", m["Uint8"], m["f32"], m["String"], m["Pstring"], m["foo"])
 	// Output:
-	// 0x8 3.14 "str" <nil>
+	// 0x8 3.14 "str" "pstr" <nil>
 }
 
 func ExampleStructsToMaps() {
@@ -40,14 +44,16 @@ func ExampleStructsToMaps() {
 		Uint8   uint8
 		Float32 float32 `json:"f32"` // tag will be used
 		String  string
-		foo     int // not exported
+		Pstring *string // pointer will be followed
+		foo     int     // not exported
 	}
-	s := []T{{8, 3.14, "str", 13}}
+	pstr := "pstr"
+	s := []T{{8, 3.14, "str", &pstr, 13}}
 	var m []map[string]interface{}
 	StructsToMaps(s, &m, "json")
-	fmt.Printf("%#v %#v %#v %#v", m[0]["Uint8"], m[0]["f32"], m[0]["String"], m[0]["foo"])
+	fmt.Printf("%#v %#v %#v %#v %#v", m[0]["Uint8"], m[0]["f32"], m[0]["String"], m[0]["Pstring"], m[0]["foo"])
 	// Output:
-	// 0x8 3.14 "str" <nil>
+	// 0x8 3.14 "str" "pstr" <nil>
 }
 
 func ExampleMapToStructNoConvert() {
