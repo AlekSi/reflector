@@ -232,7 +232,15 @@ func MapToStruct(Map map[string]interface{}, StructPointer interface{}, converte
 			continue
 		}
 
+		var fp reflect.Value
 		kind := f.Kind()
+		if kind == reflect.Ptr {
+			t := f.Type().Elem()
+			kind = t.Kind()
+			fp = reflect.New(t)
+			f = fp.Elem()
+		}
+
 		switch kind {
 		case reflect.Bool:
 			f.SetBool(converter(v, kind).(bool))
@@ -251,6 +259,10 @@ func MapToStruct(Map map[string]interface{}, StructPointer interface{}, converte
 
 		default:
 			// not implemented
+		}
+
+		if fp.IsValid() {
+			s.Field(i).Set(fp)
 		}
 	}
 
