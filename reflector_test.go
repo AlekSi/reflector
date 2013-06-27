@@ -11,6 +11,7 @@ type T struct {
 	Uintptr uintptr
 	Float32 float32 `json:"f32"`
 	String  string
+	Pstring *string
 	foo     int
 }
 

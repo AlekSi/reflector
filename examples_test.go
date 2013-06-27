@@ -27,16 +27,18 @@ func ExampleStructValueToMap() {
 		Uint8   uint8
 		Float32 float32 `json:"f32"` // tag will be used
 		String  string
-		Pstring *string // pointer will be followed
+		Pstring *string // nil will be present in map
 		foo     int     // not exported
 	}
-	pstr := "pstr"
-	s := T{8, 3.14, "str", &pstr, 13}
+	s := T{8, 3.14, "str", nil, 13}
 	m := make(map[string]interface{})
 	StructValueToMap(s, m, "json")
 	fmt.Printf("%#v %#v %#v %#v %#v\n", m["Uint8"], m["f32"], m["String"], m["Pstring"], m["foo"])
+	_, ok := m["Pstring"]
+	fmt.Println(ok)
 	// Output:
-	// 0x8 3.14 "str" "pstr" <nil>
+	// 0x8 3.14 "str" <nil> <nil>
+	// true
 }
 
 func ExampleStructsToMaps() {
