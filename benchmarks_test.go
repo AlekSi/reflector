@@ -4,10 +4,11 @@ import (
 	. "."
 	"reflect"
 	"testing"
+	"time"
 )
 
 func BenchmarkStructToMap(b *testing.B) {
-	s := T{42, 8, 0xbadcafe, 3.14, "str", nil, 13}
+	s := T{42, 8, 0xbadcafe, 3.14, "str", nil, 13, Timestamp(time.Now())}
 	m := make(map[string]interface{})
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -24,7 +25,7 @@ func BenchmarkStructToMap(b *testing.B) {
 }
 
 func BenchmarkStructValueToMap(b *testing.B) {
-	s := T{42, 8, 0xbadcafe, 3.14, "str", nil, 13}
+	s := T{42, 8, 0xbadcafe, 3.14, "str", nil, 13, Timestamp(time.Now())}
 	m := make(map[string]interface{})
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -41,7 +42,7 @@ func BenchmarkStructValueToMap(b *testing.B) {
 }
 
 func BenchmarkStructsToMaps(b *testing.B) {
-	s := []T{{42, 8, 0xbadcafe, 3.14, "str", nil, 13}}
+	s := []T{{42, 8, 0xbadcafe, 3.14, "str", nil, 13, Timestamp(time.Now())}}
 	var m []map[string]interface{}
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -68,7 +69,7 @@ func BenchmarkMapToStruct(b *testing.B) {
 		MapToStruct(m, &s, NoConvert, "json")
 	}
 	b.StopTimer()
-	expected := T{42, 8, 0xbadcafe, 3.14, "str", nil, 0}
+	expected := T{42, 8, 0xbadcafe, 3.14, "str", nil, 0, Timestamp(time.Now())}
 	if !reflect.DeepEqual(expected, s) {
 		b.Fatalf("Expected %#v, got %#v", expected, s)
 	}
@@ -85,7 +86,7 @@ func BenchmarkMapsToStructs(b *testing.B) {
 		MapsToStructs(maps, &s, NoConvert, "json")
 	}
 	b.StopTimer()
-	expected := []T{{42, 8, 0xbadcafe, 0, "", nil, 0}, {0, 0, 0, 3.14, "str", nil, 0}}
+	expected := []T{{42, 8, 0xbadcafe, 0, "", nil, 0, Timestamp(time.Now())}, {0, 0, 0, 3.14, "str", nil, 0, Timestamp(time.Now())}}
 	if !reflect.DeepEqual(expected, s) {
 		b.Fatalf("Expected %#v, got %#v", expected, s)
 	}
@@ -102,7 +103,7 @@ func BenchmarkMapsToStructs2(b *testing.B) {
 		MapsToStructs2(maps, &s, NoConvert, "json")
 	}
 	b.StopTimer()
-	expected := []T{{42, 8, 0xbadcafe, 0, "", nil, 0}, {0, 0, 0, 3.14, "str", nil, 0}}
+	expected := []T{{42, 8, 0xbadcafe, 0, "", nil, 0, Timestamp(time.Now())}, {0, 0, 0, 3.14, "str", nil, 0, Timestamp(time.Now())}}
 	if !reflect.DeepEqual(expected, s) {
 		b.Fatalf("Expected %#v, got %#v", expected, s)
 	}

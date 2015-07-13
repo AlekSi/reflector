@@ -2,8 +2,30 @@ package reflector_test
 
 import (
 	. "."
+	"fmt"
+	"strconv"
 	"testing"
+	"time"
 )
+
+type Timestamp time.Time
+
+func (t *Timestamp) MarshalJSON() ([]byte, error) {
+	ts := time.Time(*t).Unix()
+	stamp := fmt.Sprint(ts)
+	return []byte(stamp), nil
+}
+func (t *Timestamp) UnmarshalJSON(b []byte) error {
+	ts, err := strconv.Atoi(string(b))
+	if err != nil {
+		return err
+	}
+	*t = Timestamp(time.Unix(int64(ts), 0))
+	return nil
+}
+func (t *Timestamp) String() string {
+	return time.Time(*t).String()
+}
 
 type T struct {
 	Int     int
@@ -13,6 +35,7 @@ type T struct {
 	String  string
 	Pstring *string
 	foo     int
+	tm      Timestamp
 }
 
 func TestStructToMapBad1(t *testing.T) {
