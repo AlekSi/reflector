@@ -2,10 +2,8 @@
 package reflector
 
 import (
-	_ "bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"reflect"
 	"strconv"
 	"strings"
@@ -271,7 +269,7 @@ func MapToStruct(Map map[string]interface{}, StructPointer interface{}, converte
 		default:
 			m := reflect.New(f.Type()).Interface()
 			if err := json.Unmarshal([]byte(v.(string)), &m); err != nil {
-				log.Fatal(err.Error())
+				panic(fmt.Errorf(err.Error()))
 			}
 			f.Set(reflect.ValueOf(m).Elem())
 		}
